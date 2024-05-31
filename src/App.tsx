@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { io } from 'socket.io-client';
 
 type SensorData = {
   sensors: number[]
@@ -10,37 +11,43 @@ type SensorData = {
 };
 
 function App() {
-  const [data, setData] = useState<SensorData>({sensors: [0,0,0,0,0], speed: {left: 0, right: 0}, timestamp: 0});
+  const [data, setData] = useState<SensorData | null>(null);
+  const [socket, setSocket] = useState<any>(null);
 
   useEffect(() => {
-    async function fetchFile() {
-      try {
-        const response = await fetch('http://localhost:5000/data');
-        const content = await response.json()
-        setData(content);
-      } catch (error) {
-        console.error('Error al leer el archivo:', error);
-      }
+    const socket = io('localhost:5000/', { transports: ['websocket'] });
+    setSocket(socket);
+    socket.on('connect', () => {
+      console.log("connected")
+    });
+    socket.on('data', (data: SensorData) => {
+      // console.log(data)
+      setData(data);
+    });
+    return () => {
+      socket.disconnect();
     }
 
-    fetchFile();
-    
-    const intervalId = setInterval(fetchFile, 500);
-    return () => clearInterval(intervalId);
   }, []);
 
 
   return (
     <div className="flex w-full justify-center items-center p-10">
+      <div>
+        <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={() => {console.log("begin"); socket.emit("begin")}}>
+        Begin</button>
+        <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={() => {console.log("stop"); socket.emit("stop")}}>
+        End</button>
+      </div>
       <div className="flex flex-col gap-5">
         <table>
           <tbody>
             <tr>
               <td className="pr-5">Sensor izquierdo:</td>
-              <td>{data?.sensors[0]}</td>
+              <td>{data?.sensors ? data?.sensors[0] : null}</td>
               <td rowSpan={5}>
                 <div className='flex flex-row gap-3 px-10'>
-                  {data?.sensors.map((sensorValue, index) => (
+                  {data?.sensors?.map((sensorValue, index) => (
                     <div key={index} className={`border border-black w-10 h-10 rounded-full ${sensorValue === 1 ? 'bg-black' : 'bg-white'}`}></div>
                   ))}
                 </div>
