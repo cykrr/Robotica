@@ -7,7 +7,7 @@ from flask_cors import CORS
 import json
 
 app = Flask(__name__)
-
+arduino = None;
 socketio = SocketIO(app, mode='threading', debug=True, cors_allowed_origins='*')
 stop_event = threading.Event()
 
@@ -26,6 +26,8 @@ def begin():
     t.start()
 @socketio.on('stop')
 def socket_stop():
+    global arduino
+    arduino.close()
     global t
     print("stop")
     stop_event.set()
@@ -70,9 +72,12 @@ def stop():
 
 
 def main_loop():
-    arduino = serial.Serial('COM9', 9600)
+    global arduino
+    arduino = serial.Serial('COM6', 9600)
+    time.sleep(1)
     global json_data
     start_time = time.time()
+    arduino.write("event\n".encode('utf-8'))
     print("main loop")
     while not stop_event.is_set():
         try:
@@ -110,6 +115,7 @@ def main_loop():
             # print(data)
 
         except Exception as e:
+            print ("L:", line.encode('utf-8'))
             print(e)
             print("Error de lectura")
     arduino.close()

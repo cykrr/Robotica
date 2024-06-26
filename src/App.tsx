@@ -33,12 +33,6 @@ function App() {
 
   return (
     <div className="flex w-full justify-center items-center p-10">
-      <div>
-        <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={() => {console.log("begin"); socket.emit("begin")}}>
-        Begin</button>
-        <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={() => {console.log("stop"); socket.emit("stop")}}>
-        End</button>
-      </div>
       <div className="flex flex-col gap-5">
         <table>
           <tbody>
@@ -87,6 +81,14 @@ function App() {
         <div>
           <div>Tiempo: {data?.timestamp}</div>
         </div>
+
+        <div className='flex gap-5'>
+          <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={() => { console.log("begin"); socket.emit("begin") }}>
+            Begin</button>
+          <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={() => { console.log("stop"); socket.emit("stop") }}>
+            End</button>
+        </div>
+
       </div>
     </div>
   );
